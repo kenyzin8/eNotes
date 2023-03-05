@@ -1,3 +1,3 @@
 # eNotes
  eNotes Open Source
-![This is an image](https://i.imgur.com/p9SQys9.png)
+![This is an image](https://i.imgur.com/p9SQys9.png | width=100))
