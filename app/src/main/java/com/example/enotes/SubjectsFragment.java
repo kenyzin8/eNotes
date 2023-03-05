@@ -1,5 +1,6 @@
 package com.example.enotes;
 
+import android.content.Context;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
@@ -7,15 +8,17 @@ import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 
 public class SubjectsFragment extends Fragment
 {
-    ListView listView;
-    ListAdapter listAdapter;
-    ArrayList<ListData> dataArrayList = new ArrayList<>();
+    static ListView listView;
+    static ListAdapter listAdapter;
+    static ArrayList<ListData> dataArrayList = new ArrayList<>();
     ListData listData;
 
     @Override
@@ -30,26 +33,21 @@ public class SubjectsFragment extends Fragment
         View view = inflater.inflate(R.layout.fragment_subjects, container, false);
         listView = view.findViewById(R.id.listView);
 
-        dataArrayList.add(new ListData("Computer Programming 1", "Monday", 0));
-        dataArrayList.add(new ListData("Computer Programming 1", "qwe", 0));
-        dataArrayList.add(new ListData("Computer Programming 1", "Monday", 0));
-        dataArrayList.add(new ListData("Computer Programming 1", "Monday", 123));
-        dataArrayList.add(new ListData("Computer Programming 1", "Monday", 0));
-        dataArrayList.add(new ListData("Computer Programming 1", "Monday", 0));
-        dataArrayList.add(new ListData("Computer Programming 1", "Monday", 0));
-        dataArrayList.add(new ListData("Computer Programming 1", "Monday", 0));
-        dataArrayList.add(new ListData("Computer Programming 1", "Monday", 0));
-        dataArrayList.add(new ListData("Computer Programming 1", "Monday", 0));
-        dataArrayList.add(new ListData("Computer Programming 1", "Monday", 0));
-        dataArrayList.add(new ListData("Computer Programming 1", "Monday", 0));
-        dataArrayList.add(new ListData("Computer Programming 1", "Monday", 0));
-        dataArrayList.add(new ListData("Computer Programming 1", "Monday", 0));
-        dataArrayList.add(new ListData("Computer Programming 1", "Monday", 0));
-
-
-        listAdapter = new ListAdapter(requireActivity(), dataArrayList);
-        listView.setAdapter(listAdapter);
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                Toast.makeText(getActivity(), dataArrayList.get(i).subject, Toast.LENGTH_SHORT).show();
+            }
+        });
 
         return view;
+    }
+
+    public static void addSubject(Context context, String subject, String schedule, int pictures, int color)
+    {
+        dataArrayList.add(new ListData(subject, schedule, pictures, color));
+        listAdapter = new ListAdapter(context, dataArrayList);
+
+        listView.setAdapter(listAdapter);
     }
 }

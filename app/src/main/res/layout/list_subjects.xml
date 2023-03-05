@@ -14,8 +14,9 @@
     android:clipToPadding="false">
 
     <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/listSubjectsConstraintLayout"
         android:layout_width="match_parent"
-        android:layout_height="80dp"
+        android:layout_height="100dp"
         android:background="#FFFFFF">
 
         <TextView
@@ -36,13 +37,13 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="25dp"
+            android:layout_marginBottom="28dp"
             android:gravity="start"
-            android:text="Monday"
+            android:text="Monday - Thursday \n 11 : 00 AM - 2 : 00 PM"
             android:textColor="@color/black"
+            android:textSize="12sp"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.64" />
+            app:layout_constraintStart_toStartOf="parent" />
 
         <TextView
             android:id="@+id/tvPictures"
@@ -50,7 +51,7 @@
             android:layout_height="wrap_content"
             android:text="Pictures"
             android:textColor="@color/black"
-            android:textSize="18sp"
+            android:textSize="15sp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.9"

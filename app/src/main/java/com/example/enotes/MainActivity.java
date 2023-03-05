@@ -1,28 +1,45 @@
 package com.example.enotes;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 import androidx.viewpager2.widget.ViewPager2;
 
+import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Typeface;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.AdapterView;
+import android.widget.EditText;
+import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.Switch;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.enotes.databinding.ActivityMainBinding;
+import com.google.android.material.textfield.TextInputLayout;
 
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
     ViewPager2 viewPager;
     ImageView viewPagerIndicator;
+    ImageView btnAddSubject;
+    ImageView btnSearch;
     TextView btnSubjects;
     TextView btnShare;
     TextView btnSettings;
+    int cardColor = 0;
+    AlertDialog colorPickerDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,6 +59,16 @@ public class MainActivity extends AppCompatActivity {
         btnSubjects.setTypeface(null, Typeface.BOLD);
         btnShare.setTypeface(null, Typeface.NORMAL);
         btnSettings.setTypeface(null, Typeface.NORMAL);
+
+        btnAddSubject = findViewById(R.id.btnAdd);
+        btnSearch = findViewById(R.id.btnSearch);
+
+        btnAddSubject.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                showFormDialog();
+            }
+        });
 
         FragmentStateAdapter adapter = new FragmentStateAdapter(this) {
             @NonNull
@@ -74,7 +101,6 @@ public class MainActivity extends AppCompatActivity {
                 int offset = (int) ((position + positionOffset) * indicatorWidth);
                 viewPagerIndicator.setTranslationX(offset);
             }
-
             @Override
             public void onPageSelected(int position) {
                 switch (position) {
@@ -92,9 +118,75 @@ public class MainActivity extends AppCompatActivity {
                         btnSubjects.setTypeface(null, Typeface.NORMAL);
                         btnShare.setTypeface(null, Typeface.NORMAL);
                         btnSettings.setTypeface(null, Typeface.BOLD);
+
                         break;
                 }
             }
         });
+    }
+
+    private void showFormDialog() {
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+        View view = LayoutInflater.from(this).inflate(R.layout.form_layout, null);
+
+        TextInputLayout subjectLayout = view.findViewById(R.id.subjectLayout);
+        TextInputLayout scheduleDayLayout = view.findViewById(R.id.scheduleDayLayout);
+        TextInputLayout scheduleTimeLayout = view.findViewById(R.id.scheduleTimeLayout);
+        EditText subjectEditText = view.findViewById(R.id.subjectEditText);
+        EditText scheduleDayEditText = view.findViewById(R.id.scheduleDayEditText);
+        EditText scheduleTimeEditText = view.findViewById(R.id.scheduleTimeEditText);
+
+        builder.setView(view);
+
+        builder.setTitle("Add Subject");
+        builder.setPositiveButton("Save", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+
+                String subject = subjectEditText.getText().toString().trim();
+                String scheduleDay = scheduleDayEditText.getText().toString().trim();
+                String scheduleTime = scheduleTimeEditText.getText().toString().trim();
+
+                if(subject.isEmpty() || scheduleDay.isEmpty() || scheduleDay.isEmpty())
+                {
+                    Toast.makeText(MainActivity.this, "Missing Fields", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                AlertDialog.Builder colorPickerBuilder = new AlertDialog.Builder(MainActivity.this);
+
+                View colorPickerView = LayoutInflater.from(MainActivity.this).inflate(R.layout.color_picker, null);
+
+                GridView colorPickerGridView = colorPickerView.findViewById(R.id.colorPickerGridView);
+
+                ColorPickerAdapter colorPickerAdapter = new ColorPickerAdapter(MainActivity.this);
+                colorPickerGridView.setAdapter(colorPickerAdapter);
+
+                colorPickerGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                        colorPickerAdapter.setSelectedPosition(position);
+                        cardColor = colorPickerAdapter.getSelectedColor();
+                        String schedule = scheduleDay + "\n" + scheduleTime;
+                        SubjectsFragment.addSubject(MainActivity.this, subject, schedule, 0, cardColor);
+                        colorPickerDialog.dismiss();
+                    }
+                });
+
+                colorPickerBuilder.setTitle("Pick Color");
+                colorPickerBuilder.setNegativeButton("Cancel", null);
+
+                colorPickerBuilder.setView(colorPickerView);
+
+                colorPickerDialog = colorPickerBuilder.create();
+                colorPickerDialog.show();
+            }
+        });
+        builder.setNegativeButton("Cancel", null);
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
     }
 }

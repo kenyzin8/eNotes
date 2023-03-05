@@ -7,4 +7,12 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="picker1">#FE6302</color>
+    <color name="picker2">#ED3E34</color>
+    <color name="picker3">#FFEB3B</color>
+    <color name="picker4">#4CAF50</color>
+    <color name="picker5">#EDC2CF</color>
+    <color name="picker6">#CF9200</color>
+    <color name="picker7">#FEE0B9</color>
+    <color name="picker8">#00BBB9</color>
 </resources>
