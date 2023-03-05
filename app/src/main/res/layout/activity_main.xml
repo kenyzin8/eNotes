@@ -71,12 +71,12 @@
         app:layout_constraintStart_toEndOf="@+id/appName"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="1.0"
-        app:srcCompat="@drawable/ic_add" />
+        app:srcCompat="@drawable/add" />
 
     <ImageView
         android:id="@+id/btnSearch"
-        android:layout_width="88px"
-        android:layout_height="88px"
+        android:layout_width="100px"
+        android:layout_height="100px"
         android:layout_marginTop="31dp"
         app:layout_constraintBottom_toBottomOf="@+id/appName"
         app:layout_constraintEnd_toEndOf="parent"
@@ -84,7 +84,7 @@
         app:layout_constraintStart_toEndOf="@+id/btnAdd"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.8"
-        app:srcCompat="@drawable/search" />
+        app:srcCompat="@drawable/search_2" />
 
     <androidx.viewpager2.widget.ViewPager2
         android:id="@+id/viewPager"
@@ -95,6 +95,17 @@
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/viewPagerIndicator"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.04"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/btnSubjects"
+        app:srcCompat="@drawable/line" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
