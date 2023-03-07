@@ -131,7 +131,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         String[] projection = {COLUMN_IMAGE_DATA};
         String selection = COLUMN_SUBJECT_ID + " = ?";
         String[] selectionArgs = {String.valueOf(subjectID)};
-        Cursor cursor = db.query(TABLE_IMAGES, projection, selection, selectionArgs, null, null, null);
+        String sortOrder = COLUMN_IMAGE_ID + " DESC";
+        Cursor cursor = db.query(TABLE_IMAGES, projection, selection, selectionArgs, null, null, sortOrder);
         return cursor;
     }
 
