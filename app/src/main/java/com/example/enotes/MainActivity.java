@@ -41,6 +41,8 @@ public class MainActivity extends AppCompatActivity {
     int cardColor = 0;
     AlertDialog colorPickerDialog;
 
+    private DatabaseHelper dbHelper;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -108,16 +110,27 @@ public class MainActivity extends AppCompatActivity {
                         btnSubjects.setTypeface(null, Typeface.BOLD);
                         btnShare.setTypeface(null, Typeface.NORMAL);
                         btnSettings.setTypeface(null, Typeface.NORMAL);
+
+                        btnAddSubject.setVisibility(View.VISIBLE);
+                        btnSearch.setVisibility(View.VISIBLE);
+
                         break;
                     case 1:
                         btnSubjects.setTypeface(null, Typeface.NORMAL);
                         btnShare.setTypeface(null, Typeface.BOLD);
                         btnSettings.setTypeface(null, Typeface.NORMAL);
+
+                        btnAddSubject.setVisibility(View.INVISIBLE);
+                        btnSearch.setVisibility(View.INVISIBLE);
+
                         break;
                     case 2:
                         btnSubjects.setTypeface(null, Typeface.NORMAL);
                         btnShare.setTypeface(null, Typeface.NORMAL);
                         btnSettings.setTypeface(null, Typeface.BOLD);
+
+                        btnAddSubject.setVisibility(View.INVISIBLE);
+                        btnSearch.setVisibility(View.INVISIBLE);
 
                         break;
                 }
@@ -171,6 +184,8 @@ public class MainActivity extends AppCompatActivity {
                         cardColor = colorPickerAdapter.getSelectedColor();
                         String schedule = scheduleDay + "\n" + scheduleTime;
                         SubjectsFragment.addSubject(MainActivity.this, subject, schedule, 0, cardColor);
+                        dbHelper = new DatabaseHelper(MainActivity.this);
+                        dbHelper.AddSubject(subject, schedule, cardColor);
                         colorPickerDialog.dismiss();
                     }
                 });
