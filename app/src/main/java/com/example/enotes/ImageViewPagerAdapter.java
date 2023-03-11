@@ -1,6 +1,7 @@
 package com.example.enotes;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Environment;
@@ -11,6 +12,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.FileProvider;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -26,6 +28,8 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+
+import es.dmoral.toasty.Toasty;
 
 public class ImageViewPagerAdapter extends RecyclerView.Adapter<ImageViewPagerAdapter.ViewHolder> {
 
@@ -53,6 +57,28 @@ public class ImageViewPagerAdapter extends RecyclerView.Adapter<ImageViewPagerAd
                 .load(imageData)
                 .apply(requestOptions)
                 .into(holder.imageView);
+        holder.imageView.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View view) {
+                new AlertDialog.Builder(view.getContext())
+                        .setTitle("Save image to phone?")
+                        .setMessage("Are you sure you want to save this image to your phone?")
+                        .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                DatabaseHelper databaseHelper = new DatabaseHelper(view.getContext());
+                                databaseHelper.saveImageToLocalDisc(view.getContext(), imageData);
+
+                                Toasty.success(view.getContext(), "Image saved to phone.", Toasty.LENGTH_SHORT).show();
+                            }
+                        })
+                        .setNegativeButton("No", null)
+                        .show();
+
+                return true;
+            }
+        });
+
     }
 
     @Override

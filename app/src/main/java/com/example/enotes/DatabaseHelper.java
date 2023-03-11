@@ -1,5 +1,7 @@
 package com.example.enotes;
 
+import static java.security.AccessController.getContext;
+
 import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.content.Context;
@@ -7,9 +9,19 @@ import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.media.MediaScannerConnection;
+import android.net.Uri;
+import android.os.Build;
+import android.os.Environment;
+import android.provider.MediaStore;
 
 import androidx.annotation.Nullable;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -120,6 +132,37 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         values.put(FK_COLUMN_SUBJECT_ID, subjectID);
         db.insert(TABLE_IMAGES, null, values);
         db.close();
+    }
+
+    public void saveImageToLocalDisc(Context context, byte[] imageData) {
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String imageName = "IMG_" + timeStamp + ".jpg";
+        File imageFile = new File(context.getExternalFilesDir(Environment.DIRECTORY_PICTURES), imageName);
+
+        try {
+            FileOutputStream outputStream = new FileOutputStream(imageFile);
+            outputStream.write(imageData);
+            outputStream.flush();
+            outputStream.close();
+
+            // Add the image to the MediaStore database
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                ContentValues values = new ContentValues();
+                values.put(MediaStore.Images.Media.DISPLAY_NAME, imageName);
+                values.put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg");
+                values.put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES);
+                Uri uri = context.getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+                OutputStream os = context.getContentResolver().openOutputStream(uri);
+                os.write(imageData);
+                os.close();
+            } else {
+                MediaScannerConnection.scanFile(context,
+                        new String[]{imageFile.getAbsolutePath()},
+                        new String[]{"image/jpeg"}, null);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public void deleteImage(int imageId) {
