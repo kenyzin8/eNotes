@@ -1,5 +1,6 @@
 package com.example.enotes;
 
+import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -24,7 +25,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String COLUMN_SUBJECT_COLOR = "subject_color";
 
     private static final String TABLE_IMAGES = "Images";
-    private static final String COLUMN_IMAGE_ID = "image_id";
+    public static final String COLUMN_IMAGE_ID = "image_id";
     public static final String COLUMN_IMAGE_DATA = "image_data";
     private static final String COLUMN_IMAGE_DATE_TAKEN = "image_date_taken";
     private static final String FK_COLUMN_SUBJECT_ID = "subject_id";
@@ -47,7 +48,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         String createImagesTableQuery =
                 "CREATE TABLE " + TABLE_IMAGES + " ("
                         + COLUMN_IMAGE_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
-                        + COLUMN_IMAGE_DATA + " TEXT NOT NULL, "
+                        + COLUMN_IMAGE_DATA + " BLOB NOT NULL, "
                         + COLUMN_IMAGE_DATE_TAKEN + " TEXT NOT NULL, "
                         + FK_COLUMN_SUBJECT_ID + " INTEGER NOT NULL, "
                         + "FOREIGN KEY (" + FK_COLUMN_SUBJECT_ID + ") REFERENCES " + TABLE_SUBJECTS + "(" + COLUMN_SUBJECT_ID + "))";
@@ -107,9 +108,24 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         values.put(COLUMN_IMAGE_DATA, byteArray);
         values.put(COLUMN_IMAGE_DATE_TAKEN, date.getTime());
         values.put(FK_COLUMN_SUBJECT_ID, subjectID);
-        System.out.println(subjectID);
         db.insert(TABLE_IMAGES, null, values);
         db.close();
+    }
+
+    @SuppressLint("Range")
+    public byte[] loadImage(int imageId) {
+        SQLiteDatabase db = getReadableDatabase();
+        String[] projection = {COLUMN_IMAGE_DATA};
+        String selection = COLUMN_IMAGE_ID + "=?";
+        String[] selectionArgs = {String.valueOf(imageId)};
+        Cursor cursor = db.query(TABLE_IMAGES, projection, selection, selectionArgs, null, null, null);
+        byte[] imageData = null;
+        if (cursor.moveToFirst()) {
+            imageData = cursor.getBlob(cursor.getColumnIndex(COLUMN_IMAGE_DATA));
+        }
+        cursor.close();
+        db.close();
+        return imageData;
     }
 
     public int getIDBySubjectName(String subjectName) {
@@ -128,7 +144,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     public Cursor getAllImages(int subjectID) {
         SQLiteDatabase db = getReadableDatabase();
-        String[] projection = {COLUMN_IMAGE_DATA};
+        String[] projection = {COLUMN_IMAGE_ID, COLUMN_IMAGE_DATA};
         String selection = COLUMN_SUBJECT_ID + " = ?";
         String[] selectionArgs = {String.valueOf(subjectID)};
         String sortOrder = COLUMN_IMAGE_ID + " DESC";
@@ -169,4 +185,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         return numRows;
     }
+
+
 }

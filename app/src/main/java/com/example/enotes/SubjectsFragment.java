@@ -14,9 +14,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+
 
 public class SubjectsFragment extends Fragment
 {
@@ -27,18 +29,24 @@ public class SubjectsFragment extends Fragment
 
     private DatabaseHelper dbHelper;
 
+    static TextView tvWelcome, tvWelcome1;
+
     @Override
     public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
+
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
     {
         View view = inflater.inflate(R.layout.fragment_subjects, container, false);
-        listView = view.findViewById(R.id.listView);
 
+
+        listView = view.findViewById(R.id.listView);
+        tvWelcome = view.findViewById(R.id.tvWelcome);
+        tvWelcome1 = view.findViewById(R.id.tvWelcome1);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
@@ -51,7 +59,7 @@ public class SubjectsFragment extends Fragment
         });
 
         dbHelper = new DatabaseHelper(getActivity());
-        loadSubjects(dbHelper.getAllSubjects()); //GET TOTAL PICTURES
+        loadSubjects(dbHelper.getAllSubjects());
 
         return view;
     }
@@ -63,6 +71,12 @@ public class SubjectsFragment extends Fragment
         listAdapter = new ListAdapter(context, dataArrayList);
 
         listView.setAdapter(listAdapter);
+
+        if(!dataArrayList.isEmpty())
+        {
+            tvWelcome.setVisibility(View.INVISIBLE);
+            tvWelcome1.setVisibility(View.INVISIBLE);
+        }
     }
 
     public void loadSubjects(Cursor cursor)
@@ -72,6 +86,12 @@ public class SubjectsFragment extends Fragment
         while(cursor.moveToNext())
         {
             addSubject(getActivity(), cursor.getString(1), cursor.getString(2), dbHelper.getNumImagesForSubject(cursor.getInt(0)), cursor.getInt(3));
+        }
+
+        if(!dataArrayList.isEmpty())
+        {
+            tvWelcome.setVisibility(View.INVISIBLE);
+            tvWelcome1.setVisibility(View.INVISIBLE);
         }
     }
 }

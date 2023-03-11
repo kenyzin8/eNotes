@@ -14,10 +14,12 @@ import java.util.List;
 public class ImageAdapter extends BaseAdapter {
     private Context mContext;
     private List<Bitmap> mBitmaps;
+    private List<Integer> mImageIds;
 
-    public ImageAdapter(Context context, List<Bitmap> bitmaps) {
+    public ImageAdapter(Context context, List<Bitmap> bitmaps, List<Integer> imageIds) {
         mContext = context;
         mBitmaps = bitmaps;
+        mImageIds = imageIds;
     }
 
     @Override
@@ -47,6 +49,10 @@ public class ImageAdapter extends BaseAdapter {
         Bitmap bitmap = getItem(position);
 
         imageView.setImageBitmap(bitmap);
+
+        // Set the image ID as the tag for the ImageView
+        int imageId = mImageIds.get(position);
+        imageView.setTag(imageId);
 
         return view;
     }
