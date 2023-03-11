@@ -91,6 +91,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.close();
     }
 
+    public void deleteSubject(int subjectId) {
+        SQLiteDatabase db = getWritableDatabase();
+        String[] args = {String.valueOf(subjectId)};
+        db.delete(TABLE_IMAGES, FK_COLUMN_SUBJECT_ID + "=?", args);
+        db.delete(TABLE_SUBJECTS, COLUMN_SUBJECT_ID + "=?", args);
+        db.close();
+    }
+
     public Cursor getAllSubjects()
     {
         SQLiteDatabase db = this.getReadableDatabase();

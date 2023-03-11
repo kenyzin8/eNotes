@@ -92,6 +92,22 @@ public class SubjectsFragment extends Fragment
         }
     }
 
+    public static void removeSubject(Context context, int position) {
+        // Remove the ListData object at the specified position
+        dataArrayList.remove(position);
+
+        // Notify the adapter that the data has changed
+        if (listAdapter != null) {
+            listAdapter.notifyDataSetChanged();
+        }
+
+        // Show welcome message if dataArrayList is empty
+        if (dataArrayList.isEmpty()) {
+            tvWelcome.setVisibility(View.VISIBLE);
+            tvWelcome1.setVisibility(View.VISIBLE);
+        }
+    }
+
     public void loadSubjects(Cursor cursor)
     {
         dbHelper = new DatabaseHelper(getActivity());

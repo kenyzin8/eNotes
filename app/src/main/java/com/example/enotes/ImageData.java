@@ -7,7 +7,6 @@ public class ImageData {
     public ImageData(byte[] byteArray, int imageId) {
         mByteArray = byteArray;
         mImageId = imageId;
-        System.out.println(mByteArray.length);
     }
 
     public byte[] getByteArray() {
