@@ -42,22 +42,6 @@ public class ImageViewPagerAdapter extends RecyclerView.Adapter<ImageViewPagerAd
         return new ViewHolder(view);
     }
 
-    private Uri getImageUri(Context context, byte[] imageData) {
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-        String imageName = "IMG_" + timeStamp + ".jpg";
-        File imageFile = new File(context.getExternalFilesDir(Environment.DIRECTORY_PICTURES), imageName);
-
-        try {
-            FileOutputStream outputStream = new FileOutputStream(imageFile);
-            outputStream.write(imageData);
-            outputStream.flush();
-            outputStream.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return FileProvider.getUriForFile(context, context.getApplicationContext().getPackageName() + ".provider", imageFile);
-    }
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
@@ -69,26 +53,6 @@ public class ImageViewPagerAdapter extends RecyclerView.Adapter<ImageViewPagerAd
                 .load(imageData)
                 .apply(requestOptions)
                 .into(holder.imageView);
-        holder.imageView.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View view) {
-                // Create share intent with image URI
-                Uri imageUri = getImageUri(holder.itemView.getContext(), imageData);
-                Intent shareIntent = new Intent(Intent.ACTION_SEND);
-                shareIntent.setType("image/*");
-                shareIntent.putExtra(Intent.EXTRA_STREAM, imageUri);
-
-                // Show nearby share option
-                shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                shareIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                shareIntent.setPackage("com.google.android.gms");
-                if (shareIntent.resolveActivity(holder.itemView.getContext().getPackageManager()) != null) {
-                    holder.itemView.getContext().startActivity(shareIntent);
-                }
-
-                return true;
-            }
-        });
     }
 
     @Override
