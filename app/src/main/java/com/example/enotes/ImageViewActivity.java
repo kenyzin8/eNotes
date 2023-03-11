@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.viewpager.widget.ViewPager;
 import androidx.viewpager2.widget.ViewPager2;
 
 import android.content.DialogInterface;
@@ -18,6 +19,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
@@ -32,9 +34,11 @@ import es.dmoral.toasty.Toasty;
 
 public class ImageViewActivity extends AppCompatActivity {
 
-    Button btnDelete;
+    public static Button btnDelete;
 
     private int currentPictureID;
+
+    public static TextView btnBackImageView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,6 +46,7 @@ public class ImageViewActivity extends AppCompatActivity {
         setContentView(R.layout.activity_image_view);
 
         btnDelete = findViewById(R.id.btnDelete);
+        btnBackImageView = findViewById(R.id.btnBackImageView);
 
 //        int imageId = getIntent().getIntExtra("imageId", 0);
         int subjectId = getIntent().getIntExtra("subjectId", 0);
@@ -72,6 +77,7 @@ public class ImageViewActivity extends AppCompatActivity {
         btnDelete.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                System.out.println(currentPictureID);
                 AlertDialog.Builder builder = new AlertDialog.Builder(ImageViewActivity.this);
                 builder.setMessage("Are you sure you want to delete this image?")
                         .setTitle("Delete Image")
@@ -80,6 +86,7 @@ public class ImageViewActivity extends AppCompatActivity {
                             public void onClick(DialogInterface dialogInterface, int i) {
                                 DatabaseHelper databaseHelper = new DatabaseHelper(ImageViewActivity.this);
                                 databaseHelper.deleteImage(currentPictureID);
+
                                 Toasty.success(ImageViewActivity.this, "Image Deleted", Toasty.LENGTH_SHORT, true).show();
                                 finish();
                                 SubjectViewActivity.updateImages(ImageViewActivity.this, subjectId);
@@ -102,7 +109,13 @@ public class ImageViewActivity extends AppCompatActivity {
             }
         });
 
-        System.out.println("Current image ID: " + currentPictureID);
+        btnBackImageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                finish();
+            }
+        });
+
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {

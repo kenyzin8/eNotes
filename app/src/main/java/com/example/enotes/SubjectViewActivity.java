@@ -96,12 +96,13 @@ public class SubjectViewActivity extends AppCompatActivity {
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 // Get the image ID from the tag of the selected ImageView
                 int imageId = (int) view.getTag();
-
                 // Start the ImageViewActivity and pass the image ID as an extra
                 Intent intent = new Intent(SubjectViewActivity.this, ImageViewActivity.class);
                 intent.putExtra("imageId", imageId);
                 intent.putExtra("subjectId", subjectID);
                 intent.putExtra("imagePosition", i);
+
+                System.out.println(imageId + " " + subjectID + " " + i);
                 startActivity(intent);
             }
         });
@@ -211,6 +212,7 @@ public class SubjectViewActivity extends AppCompatActivity {
 
 
     private void loadImages() {
+
         databaseHelper = new DatabaseHelper(SubjectViewActivity.this);
         Cursor cursor = databaseHelper.getAllImages(subjectID);
         imageDataList = new ArrayList<>();
@@ -231,7 +233,8 @@ public class SubjectViewActivity extends AppCompatActivity {
 
         ImageAdapter adapter = new ImageAdapter(this, imageDataList, imageIds);
         gridPictures.setAdapter(adapter);
-        tvSubjectPictures.setText(gridPictures.getCount() + " Pictures");
+        String pluralHandler = gridPictures.getCount() == 1 ? " Picture" : "Pictures";
+        tvSubjectPictures.setText(gridPictures.getCount() + " " + pluralHandler);
     }
 
     public static void updateImages(Context context, int subjectID) {
@@ -255,6 +258,8 @@ public class SubjectViewActivity extends AppCompatActivity {
 
         ImageAdapter adapter = new ImageAdapter(context, imageDataList, imageIds);
         gridPictures.setAdapter(adapter);
-        tvSubjectPictures.setText(gridPictures.getCount() + " Pictures");
+
+        String pluralHandler = gridPictures.getCount() == 1 ? " Picture" : "Pictures";
+        tvSubjectPictures.setText(gridPictures.getCount() + " " + pluralHandler);
     }
 }
