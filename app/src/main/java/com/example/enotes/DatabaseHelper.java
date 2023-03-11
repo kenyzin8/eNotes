@@ -101,6 +101,16 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return cursor;
     }
 
+    public boolean isNameUnique(String subjectName) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String query = "SELECT * FROM " + TABLE_SUBJECTS +
+                " WHERE " + COLUMN_SUBJECT_NAME + " = ?";
+        Cursor cursor = db.rawQuery(query, new String[]{subjectName});
+        boolean isUnique = cursor.getCount() == 0;
+        cursor.close();
+        return isUnique;
+    }
+
     public void saveImage(int subjectID, byte[] byteArray, Date date)
     {
         SQLiteDatabase db = getWritableDatabase();
@@ -110,6 +120,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         values.put(FK_COLUMN_SUBJECT_ID, subjectID);
         db.insert(TABLE_IMAGES, null, values);
         db.close();
+    }
+
+    public void deleteImage(int imageId) {
+        SQLiteDatabase db = getWritableDatabase();
+        String whereClause = COLUMN_IMAGE_ID + " = ?";
+        String[] whereArgs = {String.valueOf(imageId)};
+        db.delete(TABLE_IMAGES, whereClause, whereArgs);
     }
 
     @SuppressLint("Range")

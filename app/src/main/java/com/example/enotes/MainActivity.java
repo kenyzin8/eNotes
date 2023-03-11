@@ -32,6 +32,8 @@ import com.google.android.material.textfield.TextInputLayout;
 
 import java.util.ArrayList;
 
+import es.dmoral.toasty.Toasty;
+
 public class MainActivity extends AppCompatActivity {
     ViewPager2 viewPager;
     ImageView viewPagerIndicator;
@@ -181,13 +183,21 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(DialogInterface dialog, int which) {
 
+                dbHelper = new DatabaseHelper(MainActivity.this);
+
+                if(!dbHelper.isNameUnique(subjectEditText.getText().toString().trim()))
+                {
+                    Toasty.error(MainActivity.this, "Subject already exist.", Toast.LENGTH_SHORT, true).show();
+                    return;
+                }
+
                 String subject = subjectEditText.getText().toString().trim();
                 String scheduleDay = scheduleDayEditText.getText().toString().trim();
                 String scheduleTime = scheduleTimeEditText.getText().toString().trim();
 
                 if(subject.isEmpty() || scheduleDay.isEmpty() || scheduleDay.isEmpty())
                 {
-                    Toast.makeText(MainActivity.this, "Missing Fields", Toast.LENGTH_SHORT).show();
+                    Toasty.error(MainActivity.this, "Missing Fields", Toast.LENGTH_SHORT, true).show();
                     return;
                 }
 
@@ -208,7 +218,9 @@ public class MainActivity extends AppCompatActivity {
                         String schedule = scheduleDay + "\n" + scheduleTime;
                         SubjectsFragment.addSubject(MainActivity.this, subject, schedule, 0, cardColor);
                         dbHelper = new DatabaseHelper(MainActivity.this);
+
                         dbHelper.AddSubject(subject, schedule, cardColor);
+                        Toasty.success(MainActivity.this, subject + "- Subject Added", Toast.LENGTH_SHORT, true).show();
                         colorPickerDialog.dismiss();
                     }
                 });

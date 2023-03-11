@@ -10,6 +10,7 @@ import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
@@ -20,10 +21,12 @@ import android.graphics.Matrix;
 import android.hardware.Camera;
 import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraMetadata;
+import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Parcelable;
 import android.provider.MediaStore;
 import android.view.View;
 import android.widget.AdapterView;
@@ -35,6 +38,7 @@ import android.widget.Toast;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -43,6 +47,8 @@ import java.util.Locale;
 
 import android.Manifest;
 
+import es.dmoral.toasty.Toasty;
+
 public class SubjectViewActivity extends AppCompatActivity {
 
     private String subjectName;
@@ -50,13 +56,15 @@ public class SubjectViewActivity extends AppCompatActivity {
     DatabaseHelper databaseHelper;
     TextView btnBack;
     TextView tvSubjectName;
-    TextView tvSubjectPictures;
+    static TextView tvSubjectPictures;
     Button btnAddImage;
 
-    GridView gridPictures;
+    public static GridView gridPictures;
     private Uri imageUri;
     private static final int CAMERA_REQUEST_CODE = 1888;
     private static final int REQUEST_CAMERA_PERMISSION = 1;
+    public static int subjectPosition;
+    ArrayList<ImageData> imageDataList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,6 +74,7 @@ public class SubjectViewActivity extends AppCompatActivity {
         Intent intent = getIntent();
         if (intent != null) {
             subjectName = intent.getStringExtra("subjectName");
+            subjectPosition = intent.getIntExtra("subjectPosition", 0);
         }
 
         btnBack = findViewById(R.id.btnBack);
@@ -73,6 +82,14 @@ public class SubjectViewActivity extends AppCompatActivity {
         tvSubjectPictures = findViewById(R.id.tvPicturesView);
         btnAddImage = findViewById(R.id.btnAddImage);
         gridPictures = findViewById(R.id.gridPictures);
+
+        gridPictures.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
+                Toast.makeText(getApplicationContext(), "Long click detected!", Toast.LENGTH_SHORT).show();
+                return false;
+            }
+        });
 
         gridPictures.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -83,6 +100,8 @@ public class SubjectViewActivity extends AppCompatActivity {
                 // Start the ImageViewActivity and pass the image ID as an extra
                 Intent intent = new Intent(SubjectViewActivity.this, ImageViewActivity.class);
                 intent.putExtra("imageId", imageId);
+                intent.putExtra("subjectId", subjectID);
+                intent.putExtra("imagePosition", i);
                 startActivity(intent);
             }
         });
@@ -129,21 +148,17 @@ public class SubjectViewActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == CAMERA_REQUEST_CODE && resultCode == RESULT_OK) {
-            System.out.println(imageUri);
             if (imageUri != null) {
                 try {
                     Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), imageUri);
                     if (bitmap != null) {
-
-                        int targetWidth = bitmap.getWidth(); // Change scale factor to 2
+                        int targetWidth = bitmap.getWidth();
                         int targetHeight = bitmap.getHeight();
 
                         Bitmap resizedBitmap = Bitmap.createScaledBitmap(bitmap, targetWidth, targetHeight, false);
 
                         Matrix matrix = new Matrix();
-
                         matrix.postRotate(90);
-
 
                         Bitmap rotatedBitmap = Bitmap.createBitmap(resizedBitmap, 0, 0, targetWidth, targetHeight, matrix, true);
 
@@ -153,7 +168,10 @@ public class SubjectViewActivity extends AppCompatActivity {
 
                         databaseHelper = new DatabaseHelper(SubjectViewActivity.this);
                         databaseHelper.saveImage(databaseHelper.getIDBySubjectName(subjectName), byteArray, new Date());
+
                         loadImages();
+                        Toasty.success(SubjectViewActivity.this, "Image Added", Toast.LENGTH_SHORT, true).show();
+                        SubjectsFragment.updateSubjectPictures(SubjectViewActivity.this, subjectPosition, gridPictures.getCount());
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -165,7 +183,6 @@ public class SubjectViewActivity extends AppCompatActivity {
     private void launchCamera() {
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         if (intent.resolveActivity(getPackageManager()) != null) {
-            // Create a file to store the image
             File imageFile = null;
             try {
                 imageFile = createImageFile();
@@ -173,47 +190,70 @@ public class SubjectViewActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
             if (imageFile != null) {
-                // Get the Uri of the image file
                 imageUri = FileProvider.getUriForFile(this, "com.example.myapp.fileprovider", imageFile);
 
-                // Set the Uri as an extra in the camera intent
                 intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
 
-                // Launch the camera app
                 startActivityForResult(intent, CAMERA_REQUEST_CODE);
             }
         }
     }
     private File createImageFile() throws IOException {
-        // Create a unique image file name
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date());
         String imageFileName = "IMG_" + timeStamp + "_";
 
-        // Get the directory where the image will be stored
         File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
 
-        // Create the image file
         File imageFile = File.createTempFile(imageFileName, ".jpg", storageDir);
 
         return imageFile;
     }
-    private void loadImages()
-    {
-        List<Bitmap> bitmaps = new ArrayList<>();
-        List<Integer> imageIds = new ArrayList<>(); // Add this line
+
+
+    private void loadImages() {
         databaseHelper = new DatabaseHelper(SubjectViewActivity.this);
         Cursor cursor = databaseHelper.getAllImages(subjectID);
+        imageDataList = new ArrayList<>();
+
         if (cursor.moveToFirst()) {
             do {
                 @SuppressLint("Range") byte[] byteArray = cursor.getBlob(cursor.getColumnIndex(COLUMN_IMAGE_DATA));
-                Bitmap bitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
-                @SuppressLint("Range") int imageId = cursor.getInt(cursor.getColumnIndex(COLUMN_IMAGE_ID)); // Retrieve the image ID from the cursor
-                bitmaps.add(bitmap);
-                imageIds.add(imageId); // Add the image ID to the list
+                @SuppressLint("Range") int imageId = cursor.getInt(cursor.getColumnIndex(COLUMN_IMAGE_ID));
+                imageDataList.add(new ImageData(byteArray, imageId));
             } while (cursor.moveToNext());
         }
         cursor.close();
-        ImageAdapter adapter = new ImageAdapter(this, bitmaps, imageIds); // Pass the image IDs to the adapter
+
+        List<Integer> imageIds = new ArrayList<>();
+        for (ImageData imageData : imageDataList) {
+            imageIds.add(imageData.getImageId());
+        }
+
+        ImageAdapter adapter = new ImageAdapter(this, imageDataList, imageIds);
+        gridPictures.setAdapter(adapter);
+        tvSubjectPictures.setText(gridPictures.getCount() + " Pictures");
+    }
+
+    public static void updateImages(Context context, int subjectID) {
+        DatabaseHelper databaseHelper = new DatabaseHelper(context);
+        Cursor cursor = databaseHelper.getAllImages(subjectID);
+        List<ImageData> imageDataList = new ArrayList<>();
+
+        if (cursor.moveToFirst()) {
+            do {
+                @SuppressLint("Range") byte[] byteArray = cursor.getBlob(cursor.getColumnIndex(COLUMN_IMAGE_DATA));
+                @SuppressLint("Range") int imageId = cursor.getInt(cursor.getColumnIndex(COLUMN_IMAGE_ID));
+                imageDataList.add(new ImageData(byteArray, imageId));
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+
+        List<Integer> imageIds = new ArrayList<>();
+        for (ImageData imageData : imageDataList) {
+            imageIds.add(imageData.getImageId());
+        }
+
+        ImageAdapter adapter = new ImageAdapter(context, imageDataList, imageIds);
         gridPictures.setAdapter(adapter);
         tvSubjectPictures.setText(gridPictures.getCount() + " Pictures");
     }

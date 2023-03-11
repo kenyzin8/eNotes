@@ -24,9 +24,8 @@ public class SubjectsFragment extends Fragment
 {
     static ListView listView;
     static ListAdapter listAdapter;
-    static ArrayList<ListData> dataArrayList = new ArrayList<>();
+    public static ArrayList<ListData> dataArrayList = new ArrayList<>();
     ListData listData;
-
     private DatabaseHelper dbHelper;
 
     static TextView tvWelcome, tvWelcome1;
@@ -54,6 +53,7 @@ public class SubjectsFragment extends Fragment
 
                 Intent intent = new Intent(getActivity(), SubjectViewActivity.class);
                 intent.putExtra("subjectName", dataArrayList.get(i).subject);
+                intent.putExtra("subjectPosition", i);
                 startActivity(intent);
             }
         });
@@ -62,6 +62,19 @@ public class SubjectsFragment extends Fragment
         loadSubjects(dbHelper.getAllSubjects());
 
         return view;
+    }
+
+    public static void updateSubjectPictures(Context context, int position, int pictures) {
+        // Get the ListData object at the specified position
+        ListData listData = dataArrayList.get(position);
+
+        // Update the pictures parameter
+        listData.pictures = pictures;
+
+        // Notify the adapter that the data has changed
+        if (listAdapter != null) {
+            listAdapter.notifyDataSetChanged();
+        }
     }
 
     public static void addSubject(Context context, String subject, String schedule, int pictures, int color)

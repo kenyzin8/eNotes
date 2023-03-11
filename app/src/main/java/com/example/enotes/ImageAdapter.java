@@ -2,6 +2,8 @@ package com.example.enotes;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,27 +11,36 @@ import android.widget.BaseAdapter;
 import android.widget.GridView;
 import android.widget.ImageView;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.target.CustomTarget;
+import com.bumptech.glide.request.transition.Transition;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.util.List;
 
 public class ImageAdapter extends BaseAdapter {
     private Context mContext;
-    private List<Bitmap> mBitmaps;
+    private List<ImageData> mImageDataList;
     private List<Integer> mImageIds;
 
-    public ImageAdapter(Context context, List<Bitmap> bitmaps, List<Integer> imageIds) {
+    public ImageAdapter(Context context, List<ImageData> imageDataList, List<Integer> imageIds) {
         mContext = context;
-        mBitmaps = bitmaps;
+        mImageDataList = imageDataList;
         mImageIds = imageIds;
     }
 
     @Override
     public int getCount() {
-        return mBitmaps.size();
+        return mImageDataList.size();
     }
 
     @Override
-    public Bitmap getItem(int position) {
-        return mBitmaps.get(position);
+    public ImageData getItem(int position) {
+        return mImageDataList.get(position);
     }
 
     @Override
@@ -45,14 +56,27 @@ public class ImageAdapter extends BaseAdapter {
         }
 
         ImageView imageView = view.findViewById(R.id.imageView);
-
-        Bitmap bitmap = getItem(position);
-
-        imageView.setImageBitmap(bitmap);
-
-        // Set the image ID as the tag for the ImageView
         int imageId = mImageIds.get(position);
         imageView.setTag(imageId);
+
+        Glide.with(mContext)
+                .asBitmap()
+                .load(mImageDataList.get(position).getByteArray())
+                .override(384, 512)
+                .into(new CustomTarget<Bitmap>() {
+                    @Override
+                    public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
+                        Bitmap resizedBitmap = Bitmap.createScaledBitmap(resource, 384, 512, false);
+                        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+                        resizedBitmap.compress(Bitmap.CompressFormat.JPEG, 70, outputStream);
+                        Bitmap compressedBitmap = BitmapFactory.decodeStream(new ByteArrayInputStream(outputStream.toByteArray()));
+                        imageView.setImageBitmap(compressedBitmap);
+                    }
+
+                    @Override
+                    public void onLoadCleared(@Nullable Drawable placeholder) {
+                    }
+                });
 
         return view;
     }
