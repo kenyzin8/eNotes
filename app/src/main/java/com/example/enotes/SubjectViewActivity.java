@@ -77,6 +77,9 @@ public class SubjectViewActivity extends AppCompatActivity {
     public static int subjectPosition;
     ArrayList<ImageData> imageDataList;
 
+    public static boolean isImportAllowed = true;
+    public static boolean isDeleteAllowed = true;
+
     private static final int REQUEST_CODE_SELECT_IMAGE = 1;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -168,8 +171,27 @@ public class SubjectViewActivity extends AppCompatActivity {
             }
         });
 
+        if(isImportAllowed)
+        {
+            btnImportImage.setVisibility(View.VISIBLE);
+        }
+        else
+        {
+            btnImportImage.setVisibility(View.INVISIBLE);
+        }
+
+        if(isDeleteAllowed)
+        {
+            btnDeleteSubject.setVisibility(View.VISIBLE);
+        }
+        else
+        {
+            btnDeleteSubject.setVisibility(View.INVISIBLE);
+        }
+
         databaseHelper = new DatabaseHelper(SubjectViewActivity.this);
         subjectID = databaseHelper.getIDBySubjectName(subjectName);
+
         loadImages();
     }
 

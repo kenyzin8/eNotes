@@ -40,6 +40,8 @@ public class ImageViewActivity extends AppCompatActivity {
 
     public static TextView btnBackImageView;
 
+    public static boolean isDeleteAllowed = true;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -116,6 +118,8 @@ public class ImageViewActivity extends AppCompatActivity {
             }
         });
 
+        if(!isDeleteAllowed)
+            btnDelete.setVisibility(View.INVISIBLE);
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {

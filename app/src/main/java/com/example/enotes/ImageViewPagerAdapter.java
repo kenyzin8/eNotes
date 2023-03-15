@@ -3,8 +3,10 @@ package com.example.enotes;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Environment;
+import android.util.SparseArray;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -21,6 +23,9 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.RequestOptions;
 import com.github.chrisbanes.photoview.OnScaleChangedListener;
 import com.github.chrisbanes.photoview.PhotoView;
+import com.google.android.gms.vision.Frame;
+import com.google.android.gms.vision.text.TextBlock;
+import com.google.android.gms.vision.text.TextRecognizer;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -34,7 +39,7 @@ import es.dmoral.toasty.Toasty;
 public class ImageViewPagerAdapter extends RecyclerView.Adapter<ImageViewPagerAdapter.ViewHolder> {
 
     private List<byte[]> imageList;
-
+    public static boolean isSavingAllowed = true;
     public ImageViewPagerAdapter(List<byte[]> imageList) {
         this.imageList = imageList;
     }
@@ -57,9 +62,15 @@ public class ImageViewPagerAdapter extends RecyclerView.Adapter<ImageViewPagerAd
                 .load(imageData)
                 .apply(requestOptions)
                 .into(holder.imageView);
+
+
+        if(!isSavingAllowed) return;
+
         holder.imageView.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View view) {
+
+
                 new AlertDialog.Builder(view.getContext())
                         .setTitle("Save image to phone?")
                         .setMessage("Are you sure you want to save this image to your phone?")

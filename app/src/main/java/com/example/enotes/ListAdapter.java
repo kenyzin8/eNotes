@@ -17,6 +17,10 @@ import java.util.ArrayList;
 public class ListAdapter extends ArrayAdapter<ListData>
 {
     ConstraintLayout listSubjectsConstrainLayout;
+
+    public static boolean isDisplaySubjectScheduleOn = true;
+    public static boolean isDisplayPictureOn = true;
+
     public ListAdapter(@NonNull Context context, ArrayList<ListData> dataArrayList) {
         super(context, R.layout.list_subjects, dataArrayList);
     }
@@ -40,6 +44,16 @@ public class ListAdapter extends ArrayAdapter<ListData>
         tvPictures.setText(listData.pictures + " " + pluralHandler);
 
         listSubjectsConstrainLayout.setBackgroundColor(listData.color);
+
+        if(isDisplaySubjectScheduleOn)
+            tvSchedule.setVisibility(View.VISIBLE);
+        else
+            tvSchedule.setVisibility(View.INVISIBLE);
+
+        if(isDisplayPictureOn)
+            tvPictures.setVisibility(View.VISIBLE);
+        else
+            tvPictures.setVisibility(View.INVISIBLE);
 
         return view;
     }

@@ -77,6 +77,26 @@ public class SubjectsFragment extends Fragment
         }
     }
 
+    public static void updateSubjectColor(Context context, int position, int color) {
+        // Get the ListData object at the specified position
+        ListData listData = dataArrayList.get(position);
+
+        // Update the pictures parameter
+        listData.color = color;
+
+        // Notify the adapter that the data has changed
+        if (listAdapter != null) {
+            listAdapter.notifyDataSetChanged();
+        }
+    }
+
+    public static void refreshSubjects()
+    {
+        if (listAdapter != null) {
+            listAdapter.notifyDataSetChanged();
+        }
+    }
+
     public static void addSubject(Context context, String subject, String schedule, int pictures, int color)
     {
         dataArrayList.add(new ListData(subject, schedule, pictures, color));

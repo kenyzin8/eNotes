@@ -91,18 +91,17 @@ public class MainActivity extends AppCompatActivity {
                         throw new IllegalArgumentException("Invalid position: " + position);
                 }
             }
-
             @Override
             public int getItemCount() {
                 return 3;
             }
         };
+
         viewPager.setAdapter(adapter);
 
         viewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-                // Calculate the new position of the indicator and move it
                 int indicatorWidth = viewPagerIndicator.getWidth();
                 int offset = (int) ((position + positionOffset) * indicatorWidth);
                 viewPagerIndicator.setTranslationX(offset);
@@ -117,6 +116,8 @@ public class MainActivity extends AppCompatActivity {
 
                         btnAddSubject.setVisibility(View.VISIBLE);
                         btnSearch.setVisibility(View.VISIBLE);
+
+                        SubjectsFragment.refreshSubjects();
 
                         break;
                     case 1:
