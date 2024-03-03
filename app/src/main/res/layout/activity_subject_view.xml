@@ -5,115 +5,94 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".SubjectViewActivity"
-    android:background="#232323">
+    android:background="#121212">
 
     <TextView
         android:id="@+id/tvPicturesView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="180dp"
+        android:layout_marginTop="8dp"
         android:text="0 Pictures"
         android:textColor="@color/white"
         android:textSize="16sp"
+        app:layout_constraintBottom_toBottomOf="@+id/btnBack"
         app:layout_constraintEnd_toEndOf="@+id/tvSubjectName"
         app:layout_constraintStart_toStartOf="@+id/tvSubjectName"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <TextView
-        android:id="@+id/appName2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="40dp"
-        android:text="e-Notes"
-        android:textColor="@color/white"
-        android:textSize="25sp"
-        android:textStyle="bold"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.1"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@+id/tvSubjectName" />
 
     <TextView
         android:id="@+id/tvSubjectName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="140dp"
         android:text="Subject Name"
         android:textColor="@color/white"
-        android:textSize="25sp"
+        android:textSize="18sp"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="@+id/btnBack" />
 
-    <TextView
+    <ImageView
         android:id="@+id/btnBack"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="100dp"
-        android:text="&lt; Back"
-        android:textColor="@color/white"
-        android:textSize="16sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="@+id/appName2"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="32dp"
+        android:padding="10dp"
+        android:src="@drawable/ic_back_white"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <GridView
-        android:id="@+id/gridPictures"
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerPictures"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginTop="220dp"
-        android:layout_marginBottom="80dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="32dp"
+        android:layout_marginBottom="32dp"
+        android:paddingLeft="16dp"
+        android:paddingRight="16dp"
+        app:layoutManager="androidx.recyclerview.widget.StaggeredGridLayoutManager"
+        app:spanCount="3"
         app:layout_constraintBottom_toTopOf="@+id/btnAddImage"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        android:horizontalSpacing="5dp"
-        android:verticalSpacing="5dp"
-        android:numColumns="auto_fit"
-        android:paddingLeft="16dp"
-        android:paddingRight="16dp"
-        android:clickable="true"
-        android:focusable="true"
-        android:descendantFocusability="blocksDescendants" />
+        app:layout_constraintTop_toBottomOf="@+id/tvPicturesView" />
 
     <Button
         android:id="@+id/btnAddImage"
         android:layout_width="match_parent"
-        android:layout_height="78dp"
+        android:layout_height="80dp"
+        android:background="#121212"
+        android:drawableTop="@drawable/ic_camera"
+        android:drawableTint="@color/white"
         android:text="Add Image"
-        android:background="#232323"
         android:textColor="@color/white"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        android:drawableTop="@drawable/ic_camera"
-        android:drawableTint="@color/white"
-      />
+        app:layout_constraintStart_toStartOf="parent" />
 
     <ImageView
         android:id="@+id/btnDeleteSubject"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="45dp"
-        app:tint="@color/white"
+        android:layout_marginEnd="16dp"
+        android:padding="10dp"
+        app:layout_constraintBottom_toBottomOf="@+id/btnImportImage"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.9"
-        app:layout_constraintStart_toEndOf="@+id/appName2"
-        app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/baseline_delete_forever_24" />
+        app:layout_constraintTop_toTopOf="@+id/btnImportImage"
+        app:srcCompat="@drawable/baseline_delete_forever_24"
+        app:tint="@color/white" />
 
     <ImageView
         android:id="@+id/btnImportImage"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="45dp"
-        android:tint="@color/white"
+        android:layout_marginEnd="8dp"
+        android:padding="10dp"
+        app:layout_constraintBottom_toBottomOf="@+id/btnBack"
         app:layout_constraintEnd_toStartOf="@+id/btnDeleteSubject"
-        app:layout_constraintHorizontal_bias="0.93"
-        app:layout_constraintStart_toEndOf="@+id/appName2"
-        app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/baseline_open_in_browser_24" />
+        app:layout_constraintTop_toTopOf="@+id/btnBack"
+        app:srcCompat="@drawable/baseline_open_in_browser_24"
+        app:tint="@color/white" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

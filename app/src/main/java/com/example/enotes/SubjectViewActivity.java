@@ -12,9 +12,12 @@ import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
 import android.annotation.SuppressLint;
 import android.app.PendingIntent;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -29,6 +32,7 @@ import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraMetadata;
 import android.media.ExifInterface;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
@@ -46,6 +50,7 @@ import android.widget.Toast;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -60,27 +65,26 @@ import es.dmoral.toasty.Toasty;
 public class SubjectViewActivity extends AppCompatActivity {
 
     private String subjectName;
-    private int subjectID;
+    public static int subjectID;
     private DatabaseHelper databaseHelper;
-    public static TextView btnBack;
+    public static ImageView btnBack;
     public static TextView tvSubjectName;
     public static TextView tvSubjectPictures;
     public static Button btnAddImage;
-
     public static ImageView btnDeleteSubject;
     public static ImageView btnImportImage;
-
-    public static GridView gridPictures;
+    public static RecyclerView recyclerPictures;
     private Uri imageUri;
     private static final int CAMERA_REQUEST_CODE = 1888;
     private static final int REQUEST_CAMERA_PERMISSION = 1;
     public static int subjectPosition;
-    ArrayList<ImageData> imageDataList;
-
+    public static ArrayList<ImageData> imageDataList;
     public static boolean isImportAllowed = true;
     public static boolean isDeleteAllowed = true;
-
     private static final int REQUEST_CODE_SELECT_IMAGE = 1;
+    public static ImageAdapter imageAdapter;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -98,29 +102,21 @@ public class SubjectViewActivity extends AppCompatActivity {
         btnAddImage = findViewById(R.id.btnAddImage);
         btnDeleteSubject = findViewById(R.id.btnDeleteSubject);
         btnImportImage = findViewById(R.id.btnImportImage);
-        gridPictures = findViewById(R.id.gridPictures);
+        recyclerPictures = findViewById(R.id.recyclerPictures);
 
-        gridPictures.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-            @Override
-            public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
-                Toast.makeText(getApplicationContext(), "Long click detected!", Toast.LENGTH_SHORT).show();
-                return false;
-            }
-        });
-
-        gridPictures.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                int imageId = (int) view.getTag();
-                Intent intent = new Intent(SubjectViewActivity.this, ImageViewActivity.class);
-                intent.putExtra("imageId", imageId);
-                intent.putExtra("subjectId", subjectID);
-                intent.putExtra("imagePosition", i);
-
-                System.out.println(imageId + " " + subjectID + " " + i);
-                startActivity(intent);
-            }
-        });
+//        gridPictures.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+//            @Override
+//            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+//                int imageId = (int) view.getTag();
+//                Intent intent = new Intent(SubjectViewActivity.this, ImageViewActivity.class);
+//                intent.putExtra("imageId", imageId);
+//                intent.putExtra("subjectId", subjectID);
+//                intent.putExtra("imagePosition", i);
+//
+//                System.out.println(imageId + " " + subjectID + " " + i);
+//                startActivity(intent);
+//            }
+//        });
 
         btnAddImage.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -162,8 +158,6 @@ public class SubjectViewActivity extends AppCompatActivity {
                 builder.show();
             }
         });
-
-
         btnImportImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -171,28 +165,25 @@ public class SubjectViewActivity extends AppCompatActivity {
             }
         });
 
-        if(isImportAllowed)
-        {
+        if(isImportAllowed){
             btnImportImage.setVisibility(View.VISIBLE);
         }
-        else
-        {
+        else {
             btnImportImage.setVisibility(View.INVISIBLE);
         }
 
-        if(isDeleteAllowed)
-        {
+        if(isDeleteAllowed) {
             btnDeleteSubject.setVisibility(View.VISIBLE);
         }
-        else
-        {
+        else {
             btnDeleteSubject.setVisibility(View.INVISIBLE);
         }
 
         databaseHelper = new DatabaseHelper(SubjectViewActivity.this);
         subjectID = databaseHelper.getIDBySubjectName(subjectName);
 
-        loadImages();
+
+        new LoadImagesTask().execute();
     }
 
     @Override
@@ -218,74 +209,98 @@ public class SubjectViewActivity extends AppCompatActivity {
         if (requestCode == REQUEST_CODE_SELECT_IMAGE && resultCode == RESULT_OK && data != null) {
             Uri imageUri = data.getData();
             if (imageUri != null) {
-                try {
-                    Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), imageUri);
-
-                    if (bitmap != null) {
-                        int targetWidth = bitmap.getWidth();
-                        int targetHeight = bitmap.getHeight();
-
-                        Bitmap resizedBitmap = Bitmap.createScaledBitmap(bitmap, targetWidth, targetHeight, false);
-
-                        Matrix matrix = new Matrix();
-                        matrix.postRotate(90);
-
-                        Bitmap rotatedBitmap = Bitmap.createBitmap(resizedBitmap, 0, 0, targetWidth, targetHeight, matrix, true);
-
-                        ByteArrayOutputStream stream = new ByteArrayOutputStream();
-                        rotatedBitmap.compress(Bitmap.CompressFormat.JPEG, 70, stream);
-                        byte[] byteArray = stream.toByteArray();
-
-                        databaseHelper = new DatabaseHelper(SubjectViewActivity.this);
-                        databaseHelper.saveImage(databaseHelper.getIDBySubjectName(subjectName), byteArray, new Date());
-
-                        loadImages();
-                        Toasty.success(SubjectViewActivity.this, "Image Imported", Toast.LENGTH_SHORT, true).show();
-                        SubjectsFragment.updateSubjectPictures(SubjectViewActivity.this, subjectPosition, gridPictures.getCount());
-
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                new ProcessImageTask(SubjectViewActivity.this).execute(imageUri);
             }
 
         }
         if (requestCode == CAMERA_REQUEST_CODE && resultCode == RESULT_OK) {
             if (imageUri != null) {
-                try {
-                    Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), imageUri);
-                    if (bitmap != null) {
-                        int targetWidth = bitmap.getWidth();
-                        int targetHeight = bitmap.getHeight();
+                new ProcessImageTask(SubjectViewActivity.this).execute(imageUri);
+            }
+        }
+    }
 
-                        Bitmap resizedBitmap = Bitmap.createScaledBitmap(bitmap, targetWidth, targetHeight, false);
+    private class ProcessImageTask extends AsyncTask<Uri, Void, byte[]> {
+        private Context context;
+        private ProgressDialog progressDialog;
 
-                        Matrix matrix = new Matrix();
+        public ProcessImageTask(Context context) {
+            this.context = context;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            progressDialog = new ProgressDialog(context);
+            progressDialog.setMessage("Processing image...");
+            progressDialog.show();
+        }
+
+        @Override
+        protected byte[] doInBackground(Uri... uris) {
+            Uri imageUri = uris[0];
+            try {
+                InputStream inputStream = context.getContentResolver().openInputStream(imageUri);
+                Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
+                inputStream.close();
+
+                // Check and correct the orientation of the image
+                Bitmap orientedBitmap = correctImageOrientation(context, imageUri, bitmap);
+
+                ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                orientedBitmap.compress(Bitmap.CompressFormat.JPEG, 70, stream);
+                return stream.toByteArray();
+            } catch (IOException e) {
+                e.printStackTrace();
+                return null;
+            }
+        }
+
+        private Bitmap correctImageOrientation(Context context, Uri photoUri, Bitmap bitmap) {
+            try {
+                ExifInterface exif = new ExifInterface(context.getContentResolver().openInputStream(photoUri));
+                int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
+                Matrix matrix = new Matrix();
+                switch (orientation) {
+                    case ExifInterface.ORIENTATION_ROTATE_90:
                         matrix.postRotate(90);
-
-                        Bitmap rotatedBitmap = Bitmap.createBitmap(resizedBitmap, 0, 0, targetWidth, targetHeight, matrix, true);
-
-                        ByteArrayOutputStream stream = new ByteArrayOutputStream();
-                        rotatedBitmap.compress(Bitmap.CompressFormat.JPEG, 70, stream);
-                        byte[] byteArray = stream.toByteArray();
-
-                        databaseHelper = new DatabaseHelper(SubjectViewActivity.this);
-                        databaseHelper.saveImage(databaseHelper.getIDBySubjectName(subjectName), byteArray, new Date());
-
-                        loadImages();
-                        Toasty.success(SubjectViewActivity.this, "Image Added", Toast.LENGTH_SHORT, true).show();
-                        SubjectsFragment.updateSubjectPictures(SubjectViewActivity.this, subjectPosition, gridPictures.getCount());
-
-                        int rowsDeleted = getContentResolver().delete(imageUri, null, null);
-                        if (rowsDeleted > 0) {
-                            Log.d(TAG, "Image file deleted successfully");
-                        } else {
-                            Log.e(TAG, "Failed to delete image file");
-                        }
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
+                        break;
+                    case ExifInterface.ORIENTATION_ROTATE_180:
+                        matrix.postRotate(180);
+                        break;
+                    case ExifInterface.ORIENTATION_ROTATE_270:
+                        matrix.postRotate(270);
+                        break;
+                    default:
+                        return bitmap;
                 }
+
+                return Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return bitmap;
+        }
+
+        @Override
+        protected void onPostExecute(byte[] byteArray) {
+            super.onPostExecute(byteArray);
+            if (progressDialog.isShowing()) {
+                progressDialog.dismiss();
+            }
+
+            if (byteArray != null) {
+                DatabaseHelper databaseHelper = new DatabaseHelper(context);
+                int id = databaseHelper.saveImage(databaseHelper.getIDBySubjectName(subjectName), byteArray, new Date());
+
+                ImageData newImage = new ImageData(byteArray, id);
+                ((ImageAdapter)recyclerPictures.getAdapter()).insertImage(newImage, id);
+
+                Toasty.success(context, "Image Added", Toast.LENGTH_SHORT, true).show();
+                SubjectsFragment.updateSubjectPictures(context, subjectPosition, ((ImageAdapter)recyclerPictures.getAdapter()).getItemCount());
+
+                String pluralHandler = imageDataList.size() == 1 ? " Picture" : "Pictures";
+                tvSubjectPictures.setText(imageDataList.size() + " " + pluralHandler);
             }
         }
     }
@@ -303,7 +318,7 @@ public class SubjectViewActivity extends AppCompatActivity {
                 imageUri = FileProvider.getUriForFile(this, "com.example.myapp.fileprovider", imageFile);
 
                 intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
-                System.out.println(imageUri);
+
                 startActivityForResult(intent, CAMERA_REQUEST_CODE);
             }
         }
@@ -319,56 +334,63 @@ public class SubjectViewActivity extends AppCompatActivity {
         return imageFile;
     }
 
+    private class LoadImagesTask extends AsyncTask<Void, Void, Void> {
+        private ProgressDialog progressDialog;
 
-    private void loadImages() {
-
-        databaseHelper = new DatabaseHelper(SubjectViewActivity.this);
-        Cursor cursor = databaseHelper.getAllImages(subjectID);
-        imageDataList = new ArrayList<>();
-
-        if (cursor.moveToFirst()) {
-            do {
-                @SuppressLint("Range") byte[] byteArray = cursor.getBlob(cursor.getColumnIndex(COLUMN_IMAGE_DATA));
-                @SuppressLint("Range") int imageId = cursor.getInt(cursor.getColumnIndex(COLUMN_IMAGE_ID));
-                imageDataList.add(new ImageData(byteArray, imageId));
-            } while (cursor.moveToNext());
-        }
-        cursor.close();
-
-        List<Integer> imageIds = new ArrayList<>();
-        for (ImageData imageData : imageDataList) {
-            imageIds.add(imageData.getImageId());
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            progressDialog = new ProgressDialog(SubjectViewActivity.this);
+            progressDialog.setMessage("Loading images...");
+            progressDialog.show();
         }
 
-        ImageAdapter adapter = new ImageAdapter(this, imageDataList, imageIds);
-        gridPictures.setAdapter(adapter);
-        String pluralHandler = gridPictures.getCount() == 1 ? " Picture" : "Pictures";
-        tvSubjectPictures.setText(gridPictures.getCount() + " " + pluralHandler);
-    }
+        @Override
+        protected Void doInBackground(Void... voids) {
+            databaseHelper = new DatabaseHelper(SubjectViewActivity.this);
+            Cursor cursor = databaseHelper.getAllImages(subjectID);
+            imageDataList = new ArrayList<>();
+            List<Integer> imageIds = new ArrayList<>();
 
-    public static void updateImages(Context context, int subjectID) {
-        DatabaseHelper databaseHelper = new DatabaseHelper(context);
-        Cursor cursor = databaseHelper.getAllImages(subjectID);
-        List<ImageData> imageDataList = new ArrayList<>();
+            if (cursor.moveToFirst()) {
+                do {
+                    @SuppressLint("Range") byte[] byteArray = cursor.getBlob(cursor.getColumnIndex(COLUMN_IMAGE_DATA));
+                    @SuppressLint("Range") int imageId = cursor.getInt(cursor.getColumnIndex(COLUMN_IMAGE_ID));
+                    imageDataList.add(new ImageData(byteArray, imageId));
+                    imageIds.add(imageId);
+                } while (cursor.moveToNext());
+            }
+            cursor.close();
 
-        if (cursor.moveToFirst()) {
-            do {
-                @SuppressLint("Range") byte[] byteArray = cursor.getBlob(cursor.getColumnIndex(COLUMN_IMAGE_DATA));
-                @SuppressLint("Range") int imageId = cursor.getInt(cursor.getColumnIndex(COLUMN_IMAGE_ID));
-                imageDataList.add(new ImageData(byteArray, imageId));
-            } while (cursor.moveToNext());
-        }
-        cursor.close();
+            ImageAdapter.tempImageIds = imageIds;
 
-        List<Integer> imageIds = new ArrayList<>();
-        for (ImageData imageData : imageDataList) {
-            imageIds.add(imageData.getImageId());
+            return null;
         }
 
-        ImageAdapter adapter = new ImageAdapter(context, imageDataList, imageIds);
-        gridPictures.setAdapter(adapter);
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
 
-        String pluralHandler = gridPictures.getCount() == 1 ? " Picture" : "Pictures";
-        tvSubjectPictures.setText(gridPictures.getCount() + " " + pluralHandler);
+            imageAdapter = new ImageAdapter(SubjectViewActivity.this, imageDataList, ImageAdapter.tempImageIds);
+            imageAdapter.setOnAllImagesLoadedListener(new ImageAdapter.OnAllImagesLoadedListener() {
+                @Override
+                public void onAllImagesLoaded() {
+                    if (progressDialog.isShowing()) {
+                        progressDialog.dismiss();
+                    }
+                }
+            });
+
+            if(ImageAdapter.tempImageIds.size() == 0) {
+                if (progressDialog.isShowing()) {
+                    progressDialog.dismiss();
+                }
+            }
+
+            recyclerPictures.setAdapter(imageAdapter);
+
+            String pluralHandler = imageAdapter.getItemCount() == 1 ? " Picture" : "Pictures";
+            tvSubjectPictures.setText(imageAdapter.getItemCount() + " " + pluralHandler);
+        }
     }
 }

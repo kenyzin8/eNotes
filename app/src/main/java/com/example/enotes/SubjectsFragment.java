@@ -25,23 +25,18 @@ public class SubjectsFragment extends Fragment
     static ListView listView;
     static ListAdapter listAdapter;
     public static ArrayList<ListData> dataArrayList = new ArrayList<>();
-    ListData listData;
     private DatabaseHelper dbHelper;
-
     static TextView tvWelcome, tvWelcome1;
 
     @Override
-    public void onCreate(Bundle savedInstanceState)
-    {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
     {
         View view = inflater.inflate(R.layout.fragment_subjects, container, false);
-
 
         listView = view.findViewById(R.id.listView);
         tvWelcome = view.findViewById(R.id.tvWelcome);
@@ -65,33 +60,26 @@ public class SubjectsFragment extends Fragment
     }
 
     public static void updateSubjectPictures(Context context, int position, int pictures) {
-        // Get the ListData object at the specified position
         ListData listData = dataArrayList.get(position);
 
-        // Update the pictures parameter
         listData.pictures = pictures;
 
-        // Notify the adapter that the data has changed
         if (listAdapter != null) {
             listAdapter.notifyDataSetChanged();
         }
     }
 
     public static void updateSubjectColor(Context context, int position, int color) {
-        // Get the ListData object at the specified position
         ListData listData = dataArrayList.get(position);
 
-        // Update the pictures parameter
         listData.color = color;
 
-        // Notify the adapter that the data has changed
         if (listAdapter != null) {
             listAdapter.notifyDataSetChanged();
         }
     }
 
-    public static void refreshSubjects()
-    {
+    public static void refreshSubjects() {
         if (listAdapter != null) {
             listAdapter.notifyDataSetChanged();
         }

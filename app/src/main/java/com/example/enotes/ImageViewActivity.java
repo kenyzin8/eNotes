@@ -15,6 +15,7 @@ import android.os.Bundle;
 import android.os.Parcelable;
 import android.util.DisplayMetrics;
 import android.view.GestureDetector;
+import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
@@ -27,6 +28,8 @@ import com.bumptech.glide.request.RequestOptions;
 import com.bumptech.glide.request.target.Target;
 import com.github.chrisbanes.photoview.PhotoView;
 
+import org.w3c.dom.Text;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,14 +37,12 @@ import es.dmoral.toasty.Toasty;
 
 public class ImageViewActivity extends AppCompatActivity {
 
-    public static Button btnDelete;
-
+    public static ImageView btnDelete;
     private int currentPictureID;
-
-    public static TextView btnBackImageView;
-
+    public static ImageView btnBackImageView;
+    private TextView tvIndex;
     public static boolean isDeleteAllowed = true;
-
+    private int imagePosition;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -49,10 +50,11 @@ public class ImageViewActivity extends AppCompatActivity {
 
         btnDelete = findViewById(R.id.btnDelete);
         btnBackImageView = findViewById(R.id.btnBackImageView);
+        tvIndex= findViewById(R.id.tvIndex);
 
 //        int imageId = getIntent().getIntExtra("imageId", 0);
         int subjectId = getIntent().getIntExtra("subjectId", 0);
-        int imagePosition = getIntent().getIntExtra("imagePosition", 0);
+        imagePosition = getIntent().getIntExtra("imagePosition", 0);
 
         DatabaseHelper databaseHelper = new DatabaseHelper(ImageViewActivity.this);
 
@@ -69,7 +71,7 @@ public class ImageViewActivity extends AppCompatActivity {
         }
 
         ViewPager2 viewPager = findViewById(R.id.viewPager);
-        ImageViewPagerAdapter adapter = new ImageViewPagerAdapter(imageDataList);
+        ImageViewPagerAdapter adapter = new ImageViewPagerAdapter(this, imageDataList);
         viewPager.setAdapter(adapter);
 
         viewPager.setOffscreenPageLimit(1);
@@ -79,24 +81,35 @@ public class ImageViewActivity extends AppCompatActivity {
         btnDelete.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                System.out.println(currentPictureID);
-                AlertDialog.Builder builder = new AlertDialog.Builder(ImageViewActivity.this);
-                builder.setMessage("Are you sure you want to delete this image?")
-                        .setTitle("Delete Image")
-                        .setPositiveButton("Delete", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                                DatabaseHelper databaseHelper = new DatabaseHelper(ImageViewActivity.this);
-                                databaseHelper.deleteImage(currentPictureID);
+                View customDialogView = LayoutInflater.from(ImageViewActivity.this).inflate(R.layout.delete_image_dialog, null);
+                android.app.AlertDialog dialog = new android.app.AlertDialog.Builder(ImageViewActivity.this)
+                        .setView(customDialogView)
+                        .create();
+                Button yesButton = customDialogView.findViewById(R.id.dialogYesButtonDelete);
+                Button noButton = customDialogView.findViewById(R.id.dialogNoButtonDelete);
+                yesButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        DatabaseHelper databaseHelper = new DatabaseHelper(ImageViewActivity.this);
+                        databaseHelper.deleteImage(currentPictureID);
 
-                                Toasty.success(ImageViewActivity.this, "Image Deleted", Toasty.LENGTH_SHORT, true).show();
-                                finish();
-                                SubjectViewActivity.updateImages(ImageViewActivity.this, subjectId);
-                                SubjectsFragment.updateSubjectPictures(ImageViewActivity.this, SubjectViewActivity.subjectPosition, SubjectViewActivity.gridPictures.getCount());
-                            }
-                        })
-                        .setNegativeButton("Cancel", null);
-                AlertDialog dialog = builder.create();
+                        Toasty.success(ImageViewActivity.this, "Image Deleted" + imagePosition, Toasty.LENGTH_SHORT, true).show();
+                        finish();
+
+                        SubjectViewActivity.imageAdapter.removeImage(currentPictureID);
+
+//                        SubjectViewActivity.updateImages(ImageViewActivity.this, subjectId);
+                        SubjectsFragment.updateSubjectPictures(ImageViewActivity.this, SubjectViewActivity.subjectPosition, SubjectViewActivity.imageDataList.size());
+                        dialog.dismiss();
+                    }
+                });
+                noButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        dialog.dismiss();
+                    }
+                });
+
                 dialog.show();
             }
         });
@@ -105,9 +118,9 @@ public class ImageViewActivity extends AppCompatActivity {
         viewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
             @Override
             public void onPageSelected(int position) {
-                // Get the current image ID and print it to the console
                 currentPictureID = imageIdList.get(position);
-                System.out.println("Current image ID: " + currentPictureID);
+                tvIndex.setText((position + 1) + "/" + adapter.getItemCount());
+                imagePosition = position;
             }
         });
 
@@ -120,6 +133,8 @@ public class ImageViewActivity extends AppCompatActivity {
 
         if(!isDeleteAllowed)
             btnDelete.setVisibility(View.INVISIBLE);
+
+        tvIndex.setText((viewPager.getCurrentItem() + 1) + "/" + adapter.getItemCount());
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {

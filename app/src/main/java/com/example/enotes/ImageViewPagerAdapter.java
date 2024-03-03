@@ -12,6 +12,7 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
@@ -38,9 +39,11 @@ import es.dmoral.toasty.Toasty;
 
 public class ImageViewPagerAdapter extends RecyclerView.Adapter<ImageViewPagerAdapter.ViewHolder> {
 
+    private Context context;
     private List<byte[]> imageList;
     public static boolean isSavingAllowed = true;
-    public ImageViewPagerAdapter(List<byte[]> imageList) {
+    public ImageViewPagerAdapter(Context context, List<byte[]> imageList) {
+        this.context = context;
         this.imageList = imageList;
     }
 
@@ -69,22 +72,33 @@ public class ImageViewPagerAdapter extends RecyclerView.Adapter<ImageViewPagerAd
         holder.imageView.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View view) {
+                View customDialogView = LayoutInflater.from(context).inflate(R.layout.save_image_dialog, null);
 
+                android.app.AlertDialog dialog = new android.app.AlertDialog.Builder(context)
+                        .setView(customDialogView)
+                        .create();
 
-                new AlertDialog.Builder(view.getContext())
-                        .setTitle("Save image to phone?")
-                        .setMessage("Are you sure you want to save this image to your phone?")
-                        .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                                DatabaseHelper databaseHelper = new DatabaseHelper(view.getContext());
-                                databaseHelper.saveImageToLocalDisc(view.getContext(), imageData);
+                Button yesButton = customDialogView.findViewById(R.id.dialogYesButton);
+                Button noButton = customDialogView.findViewById(R.id.dialogNoButton);
 
-                                Toasty.success(view.getContext(), "Image saved to phone.", Toasty.LENGTH_SHORT).show();
-                            }
-                        })
-                        .setNegativeButton("No", null)
-                        .show();
+                yesButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        DatabaseHelper databaseHelper = new DatabaseHelper(view.getContext());
+                        databaseHelper.saveImageToLocalDisc(view.getContext(), imageData);
+
+                        Toasty.success(view.getContext(), "Image saved to phone.", Toasty.LENGTH_SHORT).show();
+                        dialog.dismiss();
+                    }
+                });
+
+                noButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        dialog.dismiss();
+                    }
+                });
+                dialog.show();
 
                 return true;
             }

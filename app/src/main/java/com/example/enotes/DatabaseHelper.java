@@ -131,15 +131,17 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return isUnique;
     }
 
-    public void saveImage(int subjectID, byte[] byteArray, Date date)
-    {
+    public int saveImage(int subjectID, byte[] byteArray, Date date) {
         SQLiteDatabase db = getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(COLUMN_IMAGE_DATA, byteArray);
         values.put(COLUMN_IMAGE_DATE_TAKEN, date.getTime());
         values.put(FK_COLUMN_SUBJECT_ID, subjectID);
-        db.insert(TABLE_IMAGES, null, values);
+
+        int newRowId = (int) db.insert(TABLE_IMAGES, null, values);
         db.close();
+
+        return newRowId;
     }
 
     public void saveImageToLocalDisc(Context context, byte[] imageData) {

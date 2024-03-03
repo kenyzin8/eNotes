@@ -2,7 +2,7 @@
     <!-- Base application theme. -->
     <style name="Theme.ENotes" parent="Theme.MaterialComponents.Light.NoActionBar.Bridge">
         <!-- Primary brand color. -->
-        <item name="colorPrimary">#232323</item>
+        <item name="colorPrimary">#121212</item>
         <item name="colorPrimaryVariant">@color/purple_700</item>
         <item name="colorOnPrimary">@color/black</item>
         <!-- Secondary brand color. -->
@@ -10,7 +10,8 @@
         <item name="colorSecondaryVariant">@color/teal_200</item>
         <item name="colorOnSecondary">@color/black</item>
         <!-- Status bar color. -->
-        <item name="android:statusBarColor">#232323</item>
+        <item name="android:statusBarColor">#121212</item>
+        <item name="android:navigationBarColor">#121212</item>
         <!-- Customize your theme here. -->
     </style>
 </resources>

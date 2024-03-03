@@ -28,6 +28,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.enotes.databinding.ActivityMainBinding;
+import com.google.android.gms.ads.AdListener;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.LoadAdError;
 import com.google.android.material.textfield.TextInputLayout;
 
 import java.util.ArrayList;
@@ -36,16 +40,11 @@ import es.dmoral.toasty.Toasty;
 
 public class MainActivity extends AppCompatActivity {
     ViewPager2 viewPager;
-    ImageView viewPagerIndicator;
     ImageView btnAddSubject;
-    ImageView btnSearch;
-    TextView btnSubjects;
-    TextView btnShare;
-    TextView btnSettings;
     int cardColor = 0;
     AlertDialog colorPickerDialog;
-
     private DatabaseHelper dbHelper;
+    private AdView homeAdView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,21 +52,10 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         viewPager = findViewById(R.id.viewPager);
-        viewPagerIndicator = findViewById(R.id.viewPagerIndicator);
-        btnSubjects = findViewById(R.id.btnSubjects);
-        btnShare = findViewById(R.id.btnShare);
-        btnSettings = findViewById(R.id.btnSettings);
 
         SubjectsFragment subjectsFragment = new SubjectsFragment();
-        ShareFragment shareFragment = new ShareFragment();
-        SettingsFragment settingsFragment = new SettingsFragment();
-
-        btnSubjects.setTypeface(null, Typeface.BOLD);
-        btnShare.setTypeface(null, Typeface.NORMAL);
-        btnSettings.setTypeface(null, Typeface.NORMAL);
 
         btnAddSubject = findViewById(R.id.btnAdd);
-        btnSearch = findViewById(R.id.btnSearch);
 
         btnAddSubject.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -83,83 +71,52 @@ public class MainActivity extends AppCompatActivity {
                 switch (position) {
                     case 0:
                         return subjectsFragment;
-                    case 1:
-                        return shareFragment;
-                    case 2:
-                        return settingsFragment;
                     default:
                         throw new IllegalArgumentException("Invalid position: " + position);
                 }
             }
             @Override
             public int getItemCount() {
-                return 3;
+                return 1;
             }
         };
 
         viewPager.setAdapter(adapter);
+        viewPager.setUserInputEnabled(false);
 
-        viewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
+        homeAdView = findViewById(R.id.homeAdView);
+        AdRequest adRequest = new AdRequest.Builder().build();
+        homeAdView.loadAd(adRequest);
+
+        homeAdView.setAdListener(new AdListener() {
             @Override
-            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-                int indicatorWidth = viewPagerIndicator.getWidth();
-                int offset = (int) ((position + positionOffset) * indicatorWidth);
-                viewPagerIndicator.setTranslationX(offset);
+            public void onAdClicked() {
+                super.onAdClicked();
             }
+
             @Override
-            public void onPageSelected(int position) {
-                switch (position) {
-                    case 0:
-                        btnSubjects.setTypeface(null, Typeface.BOLD);
-                        btnShare.setTypeface(null, Typeface.NORMAL);
-                        btnSettings.setTypeface(null, Typeface.NORMAL);
-
-                        btnAddSubject.setVisibility(View.VISIBLE);
-                        btnSearch.setVisibility(View.VISIBLE);
-
-                        SubjectsFragment.refreshSubjects();
-
-                        break;
-                    case 1:
-                        btnSubjects.setTypeface(null, Typeface.NORMAL);
-                        btnShare.setTypeface(null, Typeface.BOLD);
-                        btnSettings.setTypeface(null, Typeface.NORMAL);
-
-                        btnAddSubject.setVisibility(View.INVISIBLE);
-                        btnSearch.setVisibility(View.INVISIBLE);
-
-                        break;
-                    case 2:
-                        btnSubjects.setTypeface(null, Typeface.NORMAL);
-                        btnShare.setTypeface(null, Typeface.NORMAL);
-                        btnSettings.setTypeface(null, Typeface.BOLD);
-
-                        btnAddSubject.setVisibility(View.INVISIBLE);
-                        btnSearch.setVisibility(View.INVISIBLE);
-
-                        break;
-                }
+            public void onAdClosed() {
+                super.onAdClosed();
             }
-        });
 
-        btnSubjects.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view) {
-                viewPager.setCurrentItem(0);
+            public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
+                super.onAdFailedToLoad(loadAdError);
             }
-        });
 
-        btnShare.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view) {
-                viewPager.setCurrentItem(1);
+            public void onAdImpression() {
+                super.onAdImpression();
             }
-        });
 
-        btnSettings.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view) {
-                viewPager.setCurrentItem(2);
+            public void onAdLoaded() {
+                super.onAdLoaded();
+            }
+
+            @Override
+            public void onAdOpened() {
+                super.onAdOpened();
             }
         });
     }

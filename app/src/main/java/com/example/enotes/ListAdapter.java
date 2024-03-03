@@ -40,7 +40,7 @@ public class ListAdapter extends ArrayAdapter<ListData>
         listSubjectsConstrainLayout = view.findViewById(R.id.listSubjectsConstraintLayout);
         tvSubjects.setText(listData.subject);
         tvSchedule.setText(listData.schedule);
-        String pluralHandler = listData.pictures == 1 ? " Picture" : "Pictures";
+        String pluralHandler = listData.pictures <= 1 ? "Picture" : "Pictures";
         tvPictures.setText(listData.pictures + " " + pluralHandler);
 
         listSubjectsConstrainLayout.setBackgroundColor(listData.color);
