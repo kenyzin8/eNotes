@@ -40,8 +40,10 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
     private int loadedImagesCount = 0;
     private OnAllImagesLoadedListener allImagesLoadedListener;
     public static List<Integer> tempImageIds;
+    private SubjectViewActivity subjectViewActivity;
 
-    public ImageAdapter(Context context, List<ImageData> imageDataList, List<Integer> imageIds) {
+    public ImageAdapter(SubjectViewActivity subjectViewActivity, Context context, List<ImageData> imageDataList, List<Integer> imageIds) {
+        this.subjectViewActivity = subjectViewActivity;
         mContext = context;
         mImageDataList = imageDataList;
         mImageIds = imageIds;
@@ -103,7 +105,7 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
             notifyItemRangeChanged(position, mImageDataList.size());
 
             String pluralHandler = mImageDataList.size() <= 1 ? " Picture" : "Pictures";
-            SubjectViewActivity.tvSubjectPictures.setText(mImageDataList.size() + " " + pluralHandler);
+            subjectViewActivity.setTvSubjectPictures(mImageDataList.size() + " " + pluralHandler);
         }
     }
 
@@ -116,10 +118,15 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
             public void onClick(View view) {
 
                 int imageId = (int) view.getTag();
+
                 Intent intent = new Intent(mContext, ImageViewActivity.class);
+
                 intent.putExtra("imageId", imageId);
-                intent.putExtra("subjectId", SubjectViewActivity.subjectID);
+                intent.putExtra("subjectId", subjectViewActivity.getSubjectID());
                 intent.putExtra("imagePosition", position);
+                intent.putExtra("subjectPosition", subjectViewActivity.getSubjectPosition());
+                intent.putExtra("imageDataListSize", subjectViewActivity.getImageDataList().size());
+
                 mContext.startActivity(intent);
             }
         });

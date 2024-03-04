@@ -37,24 +37,23 @@ import es.dmoral.toasty.Toasty;
 
 public class ImageViewActivity extends AppCompatActivity {
 
-    public static ImageView btnDelete;
     private int currentPictureID;
-    public static ImageView btnBackImageView;
     private TextView tvIndex;
-    public static boolean isDeleteAllowed = true;
-    private int imagePosition;
+    private int subjectId, imagePosition, subjectPosition, imageDataListSize;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_image_view);
 
-        btnDelete = findViewById(R.id.btnDelete);
-        btnBackImageView = findViewById(R.id.btnBackImageView);
+        ImageView btnDelete = findViewById(R.id.btnDelete);
+        ImageView btnBackImageView = findViewById(R.id.btnBackImageView);
         tvIndex= findViewById(R.id.tvIndex);
 
-//        int imageId = getIntent().getIntExtra("imageId", 0);
-        int subjectId = getIntent().getIntExtra("subjectId", 0);
+        subjectId = getIntent().getIntExtra("subjectId", 0);
         imagePosition = getIntent().getIntExtra("imagePosition", 0);
+        subjectPosition = getIntent().getIntExtra("subjectPosition", 0);
+        imageDataListSize = getIntent().getIntExtra("imageDataListSize", 0);
 
         DatabaseHelper databaseHelper = new DatabaseHelper(ImageViewActivity.this);
 
@@ -97,9 +96,8 @@ public class ImageViewActivity extends AppCompatActivity {
                         finish();
 
                         SubjectViewActivity.imageAdapter.removeImage(currentPictureID);
+                        SubjectsFragment.updateSubjectPictures(ImageViewActivity.this, subjectPosition, imageDataListSize);
 
-//                        SubjectViewActivity.updateImages(ImageViewActivity.this, subjectId);
-                        SubjectsFragment.updateSubjectPictures(ImageViewActivity.this, SubjectViewActivity.subjectPosition, SubjectViewActivity.imageDataList.size());
                         dialog.dismiss();
                     }
                 });
@@ -130,9 +128,6 @@ public class ImageViewActivity extends AppCompatActivity {
                 finish();
             }
         });
-
-        if(!isDeleteAllowed)
-            btnDelete.setVisibility(View.INVISIBLE);
 
         tvIndex.setText((viewPager.getCurrentItem() + 1) + "/" + adapter.getItemCount());
     }

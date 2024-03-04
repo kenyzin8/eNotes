@@ -16,6 +16,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
 import android.annotation.SuppressLint;
+import android.app.Dialog;
 import android.app.PendingIntent;
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -27,6 +28,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
+import android.graphics.drawable.ColorDrawable;
 import android.hardware.Camera;
 import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraMetadata;
@@ -64,26 +66,18 @@ import es.dmoral.toasty.Toasty;
 
 public class SubjectViewActivity extends AppCompatActivity {
 
+    private final int CAMERA_REQUEST_CODE = 1888;
+    private final int REQUEST_CAMERA_PERMISSION = 1;
+    private final int REQUEST_CODE_SELECT_IMAGE = 1;
     private String subjectName;
-    public static int subjectID;
+    private int subjectID;
     private DatabaseHelper databaseHelper;
-    public static ImageView btnBack;
-    public static TextView tvSubjectName;
-    public static TextView tvSubjectPictures;
-    public static Button btnAddImage;
-    public static ImageView btnDeleteSubject;
-    public static ImageView btnImportImage;
-    public static RecyclerView recyclerPictures;
+    private TextView tvSubjectPictures;
+    private RecyclerView recyclerPictures;
     private Uri imageUri;
-    private static final int CAMERA_REQUEST_CODE = 1888;
-    private static final int REQUEST_CAMERA_PERMISSION = 1;
-    public static int subjectPosition;
-    public static ArrayList<ImageData> imageDataList;
-    public static boolean isImportAllowed = true;
-    public static boolean isDeleteAllowed = true;
-    private static final int REQUEST_CODE_SELECT_IMAGE = 1;
+    private int subjectPosition;
+    private ArrayList<ImageData> imageDataList;
     public static ImageAdapter imageAdapter;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -93,30 +87,16 @@ public class SubjectViewActivity extends AppCompatActivity {
         Intent intent = getIntent();
         if (intent != null) {
             subjectName = intent.getStringExtra("subjectName");
-            subjectPosition = intent.getIntExtra("subjectPosition", 0);
+            setSubjectPosition(intent.getIntExtra("subjectPosition", 0));
         }
 
-        btnBack = findViewById(R.id.btnBack);
-        tvSubjectName = findViewById(R.id.tvSubjectName);
+        ImageView btnBack = findViewById(R.id.btnBack);
+        TextView tvSubjectName = findViewById(R.id.tvSubjectName);
         tvSubjectPictures = findViewById(R.id.tvPicturesView);
-        btnAddImage = findViewById(R.id.btnAddImage);
-        btnDeleteSubject = findViewById(R.id.btnDeleteSubject);
-        btnImportImage = findViewById(R.id.btnImportImage);
+        Button btnAddImage = findViewById(R.id.btnAddImage);
+        ImageView btnDeleteSubject = findViewById(R.id.btnDeleteSubject);
+        ImageView btnImportImage = findViewById(R.id.btnImportImage);
         recyclerPictures = findViewById(R.id.recyclerPictures);
-
-//        gridPictures.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-//            @Override
-//            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-//                int imageId = (int) view.getTag();
-//                Intent intent = new Intent(SubjectViewActivity.this, ImageViewActivity.class);
-//                intent.putExtra("imageId", imageId);
-//                intent.putExtra("subjectId", subjectID);
-//                intent.putExtra("imagePosition", i);
-//
-//                System.out.println(imageId + " " + subjectID + " " + i);
-//                startActivity(intent);
-//            }
-//        });
 
         btnAddImage.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -165,23 +145,8 @@ public class SubjectViewActivity extends AppCompatActivity {
             }
         });
 
-        if(isImportAllowed){
-            btnImportImage.setVisibility(View.VISIBLE);
-        }
-        else {
-            btnImportImage.setVisibility(View.INVISIBLE);
-        }
-
-        if(isDeleteAllowed) {
-            btnDeleteSubject.setVisibility(View.VISIBLE);
-        }
-        else {
-            btnDeleteSubject.setVisibility(View.INVISIBLE);
-        }
-
         databaseHelper = new DatabaseHelper(SubjectViewActivity.this);
-        subjectID = databaseHelper.getIDBySubjectName(subjectName);
-
+        setSubjectID(databaseHelper.getIDBySubjectName(subjectName));
 
         new LoadImagesTask().execute();
     }
@@ -222,7 +187,7 @@ public class SubjectViewActivity extends AppCompatActivity {
 
     private class ProcessImageTask extends AsyncTask<Uri, Void, byte[]> {
         private Context context;
-        private ProgressDialog progressDialog;
+        private Dialog customDialog;
 
         public ProcessImageTask(Context context) {
             this.context = context;
@@ -231,9 +196,11 @@ public class SubjectViewActivity extends AppCompatActivity {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            progressDialog = new ProgressDialog(context);
-            progressDialog.setMessage("Processing image...");
-            progressDialog.show();
+            customDialog = new Dialog(context);
+            customDialog.setContentView(R.layout.custom_progress_dialog);
+            customDialog.getWindow().setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
+            customDialog.setCancelable(false);
+            customDialog.show();
         }
 
         @Override
@@ -285,8 +252,8 @@ public class SubjectViewActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(byte[] byteArray) {
             super.onPostExecute(byteArray);
-            if (progressDialog.isShowing()) {
-                progressDialog.dismiss();
+            if (customDialog != null && customDialog.isShowing()) {
+                customDialog.dismiss();
             }
 
             if (byteArray != null) {
@@ -335,14 +302,17 @@ public class SubjectViewActivity extends AppCompatActivity {
     }
 
     private class LoadImagesTask extends AsyncTask<Void, Void, Void> {
-        private ProgressDialog progressDialog;
+        private Dialog customDialog;
 
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            progressDialog = new ProgressDialog(SubjectViewActivity.this);
-            progressDialog.setMessage("Loading images...");
-            progressDialog.show();
+            customDialog = new Dialog(SubjectViewActivity.this);
+            customDialog.setContentView(R.layout.custom_progress_dialog);
+            TextView tvProcessing = customDialog.findViewById(R.id.tvProcessing);
+            tvProcessing.setText("Loading images...");
+            customDialog.setCancelable(false);
+            customDialog.show();
         }
 
         @Override
@@ -371,19 +341,19 @@ public class SubjectViewActivity extends AppCompatActivity {
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
 
-            imageAdapter = new ImageAdapter(SubjectViewActivity.this, imageDataList, ImageAdapter.tempImageIds);
+            imageAdapter = new ImageAdapter(SubjectViewActivity.this, SubjectViewActivity.this, imageDataList, ImageAdapter.tempImageIds);
             imageAdapter.setOnAllImagesLoadedListener(new ImageAdapter.OnAllImagesLoadedListener() {
                 @Override
                 public void onAllImagesLoaded() {
-                    if (progressDialog.isShowing()) {
-                        progressDialog.dismiss();
+                    if (customDialog != null && customDialog.isShowing()) {
+                        customDialog.dismiss();
                     }
                 }
             });
 
             if(ImageAdapter.tempImageIds.size() == 0) {
-                if (progressDialog.isShowing()) {
-                    progressDialog.dismiss();
+                if (customDialog != null && customDialog.isShowing()) {
+                    customDialog.dismiss();
                 }
             }
 
@@ -392,5 +362,29 @@ public class SubjectViewActivity extends AppCompatActivity {
             String pluralHandler = imageAdapter.getItemCount() == 1 ? " Picture" : "Pictures";
             tvSubjectPictures.setText(imageAdapter.getItemCount() + " " + pluralHandler);
         }
+    }
+
+    public void setTvSubjectPictures(String txt) {
+        this.tvSubjectPictures.setText(txt);
+    }
+
+    public int getSubjectID() {
+        return subjectID;
+    }
+
+    public void setSubjectID(int subjectID) {
+        this.subjectID = subjectID;
+    }
+
+    public int getSubjectPosition() {
+        return subjectPosition;
+    }
+
+    public void setSubjectPosition(int subjectPosition) {
+        this.subjectPosition = subjectPosition;
+    }
+
+    public ArrayList<ImageData> getImageDataList() {
+        return imageDataList;
     }
 }

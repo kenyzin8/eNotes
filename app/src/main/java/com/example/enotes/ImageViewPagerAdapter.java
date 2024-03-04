@@ -41,7 +41,7 @@ public class ImageViewPagerAdapter extends RecyclerView.Adapter<ImageViewPagerAd
 
     private Context context;
     private List<byte[]> imageList;
-    public static boolean isSavingAllowed = true;
+
     public ImageViewPagerAdapter(Context context, List<byte[]> imageList) {
         this.context = context;
         this.imageList = imageList;
@@ -65,9 +65,6 @@ public class ImageViewPagerAdapter extends RecyclerView.Adapter<ImageViewPagerAd
                 .load(imageData)
                 .apply(requestOptions)
                 .into(holder.imageView);
-
-
-        if(!isSavingAllowed) return;
 
         holder.imageView.setOnLongClickListener(new View.OnLongClickListener() {
             @Override

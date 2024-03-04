@@ -39,10 +39,10 @@ import java.util.ArrayList;
 import es.dmoral.toasty.Toasty;
 
 public class MainActivity extends AppCompatActivity {
-    ViewPager2 viewPager;
-    ImageView btnAddSubject;
-    int cardColor = 0;
-    AlertDialog colorPickerDialog;
+    private ViewPager2 viewPager;
+    private ImageView btnAddSubject;
+    private int cardColor = 0;
+    private AlertDialog colorPickerDialog;
     private DatabaseHelper dbHelper;
     private AdView homeAdView;
 
