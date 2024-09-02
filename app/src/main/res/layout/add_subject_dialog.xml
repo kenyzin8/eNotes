@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:background="#121212">
+
+    <com.google.android.gms.ads.AdView
+        android:id="@+id/adAddSubject"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        app:adSize="BANNER"
+        app:adUnitId="ca-app-pub-8165483016093949/5159929897"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/imageView3" />
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/tilSubject"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="8dp"
+        android:hint="Enter subject name"
+        android:textColorHint="#80FFFFFF"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView4">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etSubject"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="text"
+            android:textColor="@color/white"
+            android:textColorHint="@color/white"
+            android:fontFamily="sans-serif"
+            android:textStyle="bold"
+            android:maxLength="20"/>
+    </com.google.android.material.textfield.TextInputLayout>
+
+<!--    <com.google.android.material.textfield.TextInputLayout-->
+<!--        android:id="@+id/tilSchedDay"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:layout_marginStart="8dp"-->
+<!--        android:layout_marginTop="8dp"-->
+<!--        android:layout_marginEnd="8dp"-->
+<!--        android:hint="Schedule Day"-->
+<!--        android:textColorHint="#80FFFFFF"-->
+<!--        app:boxStrokeColor="@color/box_stroke_colors"-->
+<!--        app:hintTextColor="@color/box_stroke_colors"-->
+<!--        app:layout_constraintEnd_toEndOf="parent"-->
+<!--        app:layout_constraintStart_toStartOf="parent"-->
+<!--        app:layout_constraintTop_toBottomOf="@+id/tilSubject">-->
+
+<!--        <EditText-->
+<!--            android:id="@+id/etSchedDay"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:drawableEnd="@drawable/ic_calendar"-->
+<!--            android:drawablePadding="8dp"-->
+<!--            android:drawableTint="#CDFFFFFF"-->
+<!--            android:focusable="false"-->
+<!--            android:fontFamily="sans-serif"-->
+<!--            android:inputType="none"-->
+<!--            android:onClick="showDatePickerDialog"-->
+<!--            android:textColor="@color/white"-->
+<!--            android:textColorHint="@color/white"-->
+<!--            android:textStyle="bold" />-->
+
+<!--    </com.google.android.material.textfield.TextInputLayout>-->
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnSave"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:backgroundTint="#FFC107"
+        android:text="Save"
+        android:textColor="@color/black"
+        app:cornerRadius="15px"
+        android:fontFamily="sans-serif"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="@+id/btnCancel"
+        app:layout_constraintEnd_toEndOf="@+id/tilSubject"
+        app:layout_constraintStart_toEndOf="@+id/btnCancel"
+        app:layout_constraintTop_toTopOf="@+id/btnCancel" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnCancel"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="16dp"
+        android:backgroundTint="#F1F1F1"
+        android:text="Cancel"
+        android:textColor="@color/black"
+        app:cornerRadius="15px"
+        android:fontFamily="sans-serif"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/tilSubject"
+        app:layout_constraintTop_toBottomOf="@+id/tilSubject" />
+
+    <TextView
+        android:id="@+id/textView4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:fontFamily="sans-serif"
+        android:textStyle="bold"
+        android:text="Add Subject"
+        android:textColor="@color/white"
+        android:textSize="25sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/adAddSubject" />
+
+    <ImageView
+        android:id="@+id/imageView3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/ic_horizontal_line" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

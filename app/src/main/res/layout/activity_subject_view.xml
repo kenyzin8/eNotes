@@ -52,11 +52,24 @@
         android:paddingLeft="16dp"
         android:paddingRight="16dp"
         app:layoutManager="androidx.recyclerview.widget.StaggeredGridLayoutManager"
-        app:spanCount="3"
-        app:layout_constraintBottom_toTopOf="@+id/btnAddImage"
+        app:layout_constraintBottom_toTopOf="@+id/homeAdView"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tvPicturesView" />
+        app:layout_constraintTop_toBottomOf="@+id/tvPicturesView"
+        app:spanCount="3" />
+
+    <com.google.android.gms.ads.AdView
+        android:id="@+id/homeAdView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="32dp"
+        android:layout_marginEnd="32dp"
+        android:layout_marginBottom="32dp"
+        app:adSize="BANNER"
+        app:adUnitId="ca-app-pub-8165483016093949/2995316771"
+        app:layout_constraintBottom_toTopOf="@+id/btnAddImage"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
     <Button
         android:id="@+id/btnAddImage"
